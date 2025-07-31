@@ -37,7 +37,6 @@ dependencies:
   camera: ^0.11.2
   camera_windows: ^0.2.6+2
   google_fonts: ^6.1.0
-  tflite_flutter: ^0.11.0
   permission_handler: ^12.0.1
   image: ^4.5.4
   cross_file: ^0.3.4+2
@@ -49,6 +48,14 @@ dependencies:
       url: https://github.com/Telosnex/fllama.git
       ref: main
   path: ^1.9.1
+  flutter_onnxruntime: ^1.4.3
+  record: ^6.0.0
+  flutter_sound_processing:
+    git:
+      url: https://github.com/kethan1/flutter_sound_processing
+      ref: master
+  fftea: ^1.5.0+1
+  tflite_flutter: ^0.11.0
 
 dev_dependencies:
   flutter_test:
@@ -93,7 +100,9 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   assets:
-    - assets/models/image-cnn.tflite
+    - assets/models/image-cnn.onnx
+    - assets/models/audio-cnn.onnx
+    - assets/models/audio-cnn.tflite
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

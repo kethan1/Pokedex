@@ -19,10 +19,8 @@ class HuggingFaceDownloader {
       if (!await modelDirectory.exists()) {
         await modelDirectory.create(recursive: true);
       }
-      print('directory ${modelDirectory.listSync()}');
 
       final file = File('${modelDirectory.path}/$fileName');
-      print('Downloading model to ${file.path}');
 
       if (await file.exists()) {
         onComplete(file.path);
@@ -35,7 +33,6 @@ class HuggingFaceDownloader {
 
       final totalBytes = response.contentLength;
       int receivedBytes = 0;
-
 
       // Create a sink to write to the file
       final sink = file.openWrite();

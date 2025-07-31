@@ -1,14 +1,18 @@
 import 'dart:io';
 import 'dart:math';
+import 'dart:typed_data';
 import 'package:image/image.dart' as img;
 import 'package:cross_file/cross_file.dart';
-import 'package:tflite_flutter/tflite_flutter.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:flutter_onnxruntime/flutter_onnxruntime.dart';
 
 import 'classification_probabilities.dart';
 
 class ImageClassifier {
-  final Future<Interpreter> _interpreter;
+  late Future<void> _initializeFuture;
+  late String _modelPath;
+  late OrtSession _session;
+
   final List<String> _labels = [
     'bulbosaur',
     'charmander',
@@ -20,11 +24,29 @@ class ImageClassifier {
     'squirtle',
   ];
 
-  ImageClassifier(String modelPath)
-    : _interpreter = Interpreter.fromAsset(modelPath);
+  ImageClassifier(String modelPath) {
+    _modelPath = modelPath;
+    _initializeFuture = initialize();
+  }
+
+  Future<void> initialize() async {
+    List<OrtProvider> availableProviders = await OnnxRuntime()
+        .getAvailableProviders();
+
+    OrtProvider provider = availableProviders.isNotEmpty
+        ? availableProviders.first
+        : OrtProvider.CPU;
+
+    final sessionOptions = OrtSessionOptions(providers: [provider]);
+
+    _session = await OnnxRuntime().createSessionFromAsset(
+      _modelPath,
+      options: sessionOptions,
+    );
+  }
 
   /// Reads [imageFile], resizes to 200×200, normalizes, and returns a List shaped [3,200,200] (CHW).
-  Future<List<List<List<double>>>> _preprocessImage(XFile imageFile) async {
+  Future<OrtValue> _preprocessImage(XFile imageFile) async {
     final Directory directory = await getApplicationDocumentsDirectory();
     final File file = File('${directory.path}/image.jpg');
     await file.writeAsBytes(await imageFile.readAsBytes());
@@ -37,44 +59,54 @@ class ImageClassifier {
 
     final resized = img.copyResize(rawImage, width: 200, height: 200);
 
+    final Float32List imgData = Float32List(1 * 3 * 200 * 200);
+
     const List<double> mean = [0.4960, 0.4695, 0.4262];
     const List<double> std = [0.2158, 0.2027, 0.1885];
 
-    final imgData = List<List<List<double>>>.generate(
-      3,
-      (_) => List<List<double>>.generate(
-        200,
-        (_) => List<double>.filled(200, 0.0),
-      ),
-    );
-
+    int pixelIndex = 0;
     for (int y = 0; y < 200; y++) {
       for (int x = 0; x < 200; x++) {
         final pixel = resized.getPixel(x, y);
 
-        imgData[0][y][x] = ((pixel.r / 255.0) - mean[0]) / std[0];
-        imgData[1][y][x] = ((pixel.g / 255.0) - mean[1]) / std[1];
-        imgData[2][y][x] = ((pixel.b / 255.0) - mean[2]) / std[2];
+        // imgData[pixelIndex++] = ((pixel.r / 255.0) - mean[0]) / std[0];
+        // imgData[pixelIndex++] = ((pixel.g / 255.0) - mean[1]) / std[1];
+        // imgData[pixelIndex++] = ((pixel.b / 255.0) - mean[2]) / std[2];
+
+        imgData[pixelIndex++] = pixel.r / 255.0;
+        imgData[pixelIndex++] = pixel.g / 255.0;
+        imgData[pixelIndex++] = pixel.b / 255.0;
       }
     }
 
-    return imgData;
+    OrtValue inputTensor = await OrtValue.fromList(
+      imgData,
+      [1, 3, 200, 200], // Input shape: batch, channels, height, width
+    );
+
+    return inputTensor;
   }
 
   Future<ClassificationProbabilities> classifyImage(XFile image) async {
     return await classifyTensor(await _preprocessImage(image));
   }
 
-  // Input shape: [3, 200, 200]
+  // Input shape: OrtValue with [1, 3, 200, 200]
   // Batch dimension is handled internally
   Future<ClassificationProbabilities> classifyTensor(
-    List<List<List<double>>> input,
+    OrtValue inputTensor,
   ) async {
-    var output = List.filled(1 * 8, 0.0).reshape([1, 8]);
+    await _initializeFuture;
 
-    (await _interpreter).run([input], output);
+    final String inputName = _session.inputNames.first;
+    final String outputName = _session.outputNames.first;
 
-    List<double> probabilities = _softmax(output[0]);
+    final outputs = await _session.run({inputName: inputTensor});
+
+    final List<double> scores = (await outputs[outputName]!.asFlattenedList())
+        .cast<double>();
+
+    List<double> probabilities = _softmax(scores);
 
     return ClassificationProbabilities(
       Map.fromIterables(_labels, probabilities),
@@ -87,6 +119,6 @@ class ImageClassifier {
   }
 
   void close() async {
-    (await _interpreter).close();
+    _session.close();
   }
 }

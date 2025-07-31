@@ -6,7 +6,9 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:cross_file/cross_file.dart';
 
 import 'camera_modal_sheet.dart';
+import 'microphone_modal_sheet.dart';
 import 'pokemon_detail_screen.dart';
+import '../utils/audio_classifier.dart';
 import '../utils/image_classifier.dart';
 import '../utils/classification_probabilities.dart';
 
@@ -17,8 +19,12 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final ImageClassifier _classifier = ImageClassifier(
-    'assets/models/image-cnn.tflite',
+  final ImageClassifier _imageClassifier = ImageClassifier(
+    'assets/models/image-cnn.onnx',
+  );
+
+  final AudioClassifier _audioClassifier = AudioClassifier(
+    'assets/models/audio-cnn.tflite',
   );
 
   @override
@@ -28,8 +34,46 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   void dispose() {
-    _classifier.close();
+    _imageClassifier.close();
+    _audioClassifier.close();
     super.dispose();
+  }
+
+  void _onAudioPokemon(BuildContext context) async {
+    if (!context.mounted) return;
+
+    final XFile? audioFile = await showModalBottomSheet<XFile>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.black.withAlpha(200),
+      useSafeArea: true,
+      enableDrag: true,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+      builder: (context) => GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 6, sigmaY: 6),
+          child: MicrophoneModalSheet(),
+        ),
+      ),
+    );
+
+    // if the user recorded one, navigate
+    // if (audioFile != null) {
+    //   ClassificationProbabilities probabilities = await _audioClassifier.classifyAudio(audioFile);
+
+    //   if (!context.mounted) return;
+
+    //   print('Probabilities: $probabilities');
+
+    //   Navigator.of(context).pushNamed(
+    //     PokemonDetailScreen.routeName,
+    //     arguments: {
+    //       'probabilities': probabilities,
+    //       'audio': File(audioFile.path),
+    //     },
+    //   );
+    // }
   }
 
   void _onScanPokemon(BuildContext context) async {
@@ -53,7 +97,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     // if the user took one, navigate
     if (picture != null) {
-      ClassificationProbabilities probabilities = await _classifier.classifyImage(picture);
+      ClassificationProbabilities probabilities = await _imageClassifier.classifyImage(picture);
 
       if (!context.mounted) return;
 
@@ -171,7 +215,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   ),
                                   elevation: 4,
                                 ),
-                                onPressed: () {}, // No action yet
+                                onPressed: () => _onAudioPokemon(context),
                               ),
                             ),
                           ],

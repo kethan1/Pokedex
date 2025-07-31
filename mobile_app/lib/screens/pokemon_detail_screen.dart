@@ -51,7 +51,7 @@ class _PokemonDetailScreenState extends State<PokemonDetailScreen> {
     return modelDir;
   }
 
-  Future<void> _startDownload({required BuildContext context}) async {
+  Future<void> _startDownload() async {
     if (_isDownloading) return;
 
     setState(() {
@@ -68,7 +68,6 @@ class _PokemonDetailScreenState extends State<PokemonDetailScreen> {
               _progress = received / total;
               _status =
                   'Downloaded: ${(received / 1024 / 1024).toStringAsFixed(2)}MB of ${(total / 1024 / 1024).toStringAsFixed(2)}MB '
-
                   '(${(_progress * 100).toStringAsFixed(1)}%)';
             });
           }
@@ -119,161 +118,178 @@ class _PokemonDetailScreenState extends State<PokemonDetailScreen> {
       child: Scaffold(
         backgroundColor: Colors.transparent,
         appBar: AppBar(backgroundColor: Colors.transparent),
-        body: Center(
-          child: _modelPath.isEmpty
-              // Show download UI until model is ready
-              ? Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(_status, style: const TextStyle(color: Colors.white)),
-                    const SizedBox(height: 8),
-                    LinearProgressIndicator(
-                      value: _isDownloading ? _progress : null,
-                      backgroundColor: Colors.white24,
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.blueAccent),
-                    ),
-                    const SizedBox(height: 16),
-                    ElevatedButton(
-                      onPressed: () => _startDownload(context: context),
-                      child: const Text('Download Model'),
-                    ),
-                  ],
-                )
-              // Once model is downloaded, show info
-              : FutureBuilder<PokemonInfo>(
-                  future: _infoFuture,
-                  builder: (context, asyncSnapshot) {
-                    if (asyncSnapshot.connectionState == ConnectionState.waiting) {
-                      return const Center(child: CircularProgressIndicator());
-                    }
-                    if (asyncSnapshot.hasError) {
-                      return Center(
-                        child: Text(
-                          'Error: ${asyncSnapshot.error}',
-                          style: const TextStyle(color: Colors.red),
-                        ),
-                      );
-                    }
-                    final PokemonInfo data = asyncSnapshot.data!;
-                    return Card(
-                      elevation: 8,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(32),
+        body: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          child: Center(
+            child: _modelPath.isEmpty
+                // Show download UI until model is ready
+                ? Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        _status,
+                        style: const TextStyle(color: Colors.white),
                       ),
-                      color: Colors.white.withValues(alpha: 0.05),
-                      child: Padding(
-                        padding: const EdgeInsets.all(24.0),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(80),
-                              child: widget.image != null
-                                  ? Image.file(
-                                      widget.image,
-                                      width: 160,
-                                      height: 160,
-                                      fit: BoxFit.fitHeight,
-                                    )
-                                  : Container(
-                                      color: Colors.white,
-                                      width: 160,
-                                      height: 160,
-                                    ),
-                            ),
-                            const SizedBox(height: 24),
-                            Text(
-                              widget.probabilities
-                                  .getMostProbableClass()
-                                  .toUpperCase(),
-                              style: GoogleFonts.inter(
-                                fontSize: 32,
-                                fontWeight: FontWeight.bold,
-                                color: const Color(0xFFEF5350),
-                              ),
-                            ),
-                            const SizedBox(height: 12),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: data.types
-                                  .map(
-                                    (type) => Container(
-                                      margin: const EdgeInsets.symmetric(
-                                        horizontal: 6,
-                                      ),
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 16,
-                                        vertical: 8,
-                                      ),
-                                      child: Text(
-                                        type,
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ),
+                      const SizedBox(height: 8),
+                      LinearProgressIndicator(
+                        value: _isDownloading ? _progress : null,
+                        backgroundColor: Colors.white24,
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          Colors.blueAccent,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      ElevatedButton(
+                        onPressed: () => _startDownload(),
+                        child: const Text('Download Model'),
+                      ),
+                    ],
+                  )
+                // Once model is downloaded, show info
+                : Card(
+                    elevation: 8,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(32),
+                    ),
+                    color: Colors.white.withValues(alpha: 0.05),
+                    child: Padding(
+                      padding: const EdgeInsets.all(24.0),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(80),
+                            child: widget.image != null
+                                ? Image.file(
+                                    widget.image,
+                                    width: 160,
+                                    height: 160,
+                                    fit: BoxFit.fitHeight,
                                   )
-                                  .toList(),
+                                : Container(
+                                    color: Colors.white,
+                                    width: 160,
+                                    height: 160,
+                                  ),
+                          ),
+                          const SizedBox(height: 24),
+                          Text(
+                            widget.probabilities
+                                .getMostProbableClass()
+                                .toUpperCase(),
+                            style: GoogleFonts.inter(
+                              fontSize: 32,
+                              fontWeight: FontWeight.bold,
+                              color: const Color(0xFFEF5350),
                             ),
-                            const SizedBox(height: 24),
-                            Text(
-                              data.description,
-                              textAlign: TextAlign.center,
-                              style: GoogleFonts.inter(
-                                fontSize: 18,
-                                color: Colors.white,
-                              ),
-                            ),
-                            const SizedBox(height: 24),
-                            Text(
-                              'Confidence: ${(widget.probabilities.getProbability(widget.probabilities.getMostProbableClass()) * 100).toStringAsFixed(1)}%',
-                              style: const TextStyle(
-                                fontSize: 16,
-                                color: Colors.white70,
-                              ),
-                            ),
-                            const SizedBox(height: 24),
-                            ExpansionTile(
-                              title: const Text(
-                                'Other Detections',
-                                style: TextStyle(color: Colors.white),
-                              ),
-                              children: [
-                                SizedBox(
-                                  height: 200,
-                                  child: Scrollbar(
-                                    child: ListView(
-                                      children: widget.probabilities
-                                          .getProbabilitiesMap()
-                                          .entries
-                                          .where(
-                                            (entry) =>
-                                                entry.key != widget.probabilities.getMostProbableClass(),
-                                          )
-                                          .map(
-                                            (entry) => ListTile(
-                                              title: Text(
-                                                '${entry.key}: ${(entry.value * 100).toStringAsFixed(1)}%',
-                                                style: const TextStyle(
-                                                  color: Colors.white70,
-                                                ),
+                          ),
+                          const SizedBox(height: 12),
+                          FutureBuilder<PokemonInfo>(
+                            future: _infoFuture,
+                            builder: (context, asyncSnapshot) {
+                              if (asyncSnapshot.connectionState ==
+                                  ConnectionState.waiting) {
+                                return const Center(
+                                  child: CircularProgressIndicator(),
+                                );
+                              }
+                              if (asyncSnapshot.hasError) {
+                                return Center(
+                                  child: Text(
+                                    'Error: ${asyncSnapshot.error}',
+                                    style: const TextStyle(color: Colors.red),
+                                  ),
+                                );
+                              }
+                              final PokemonInfo data = asyncSnapshot.data!;
+                              return Column(
+                                children: [
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: data.types
+                                        .map(
+                                          (type) => Container(
+                                            margin: const EdgeInsets.symmetric(
+                                              horizontal: 6,
+                                            ),
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 16,
+                                              vertical: 8,
+                                            ),
+                                            child: Text(
+                                              type,
+                                              style: const TextStyle(
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.bold,
                                               ),
                                             ),
-                                          )
-                                          .toList(),
+                                          ),
+                                        )
+                                        .toList(),
+                                  ),
+                                  const SizedBox(height: 24),
+                                  Text(
+                                    data.description,
+                                    textAlign: TextAlign.center,
+                                    style: GoogleFonts.inter(
+                                      fontSize: 18,
+                                      color: Colors.white,
                                     ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              );
+                            },
+                          ),
+                          const SizedBox(height: 24),
+                          Text(
+                            'Confidence: ${(widget.probabilities.getProbability(widget.probabilities.getMostProbableClass()) * 100).toStringAsFixed(1)}%',
+                            style: const TextStyle(
+                              fontSize: 16,
+                              color: Colors.white70,
                             ),
-                          ],
-                        ),
+                          ),
+                          const SizedBox(height: 24),
+                          ExpansionTile(
+                            title: const Text(
+                              'Other Detections',
+                              style: TextStyle(color: Colors.white),
+                            ),
+                            children: [
+                              SizedBox(
+                                height: 200,
+                                child: Scrollbar(
+                                  child: ListView(
+                                    children: widget.probabilities
+                                        .getProbabilitiesMap()
+                                        .entries
+                                        .where(
+                                          (entry) =>
+                                              entry.key !=
+                                              widget.probabilities
+                                                  .getMostProbableClass(),
+                                        )
+                                        .map(
+                                          (entry) => ListTile(
+                                            title: Text(
+                                              '${entry.key}: ${(entry.value * 100).toStringAsFixed(1)}%',
+                                              style: const TextStyle(
+                                                color: Colors.white70,
+                                              ),
+                                            ),
+                                          ),
+                                        )
+                                        .toList(),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
-                    );
-                  },
-                ),
+                    ),
+                  ),
+          ),
         ),
       ),
     );
