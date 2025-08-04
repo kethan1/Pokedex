@@ -45,18 +45,18 @@ packages:
     dependency: transitive
     description:
       name: camera_android_camerax
-      sha256: "4b6c1bef4270c39df96402c4d62f2348c3bb2bbaefd0883b9dbd58f426306ad0"
+      sha256: "58b8fe843a3c83fd1273c00cb35f5a8ae507f6cc9b2029bcf7e2abba499e28d8"
       url: "https://pub.dev"
     source: hosted
-    version: "0.6.19"
+    version: "0.6.19+1"
   camera_avfoundation:
     dependency: transitive
     description:
       name: camera_avfoundation
-      sha256: cabc6cbdeadca9cbcac178110c9d5e87bde5c646c3b8c9c4c2747fc500a12432
+      sha256: "04e1f052ef268085a4f0550389211cc46005a9af015e444c7b1ee7aa19332e5d"
       url: "https://pub.dev"
     source: hosted
-    version: "0.9.20+5"
+    version: "0.9.20+6"
   camera_platform_interface:
     dependency: transitive
     description:
@@ -192,7 +192,7 @@ packages:
     source: sdk
     version: "0.0.0"
   flutter_launcher_icons:
-    dependency: "direct main"
+    dependency: "direct dev"
     description:
       name: flutter_launcher_icons
       sha256: "10f13781741a2e3972126fae08393d3c4e01fa4cd7473326b94b72cf594195e7"
@@ -246,10 +246,10 @@ packages:
     dependency: "direct main"
     description:
       name: google_fonts
-      sha256: b1ac0fe2832c9cc95e5e88b57d627c5e68c223b9657f4b96e1487aa9098c7b82
+      sha256: df9763500dadba0155373e9cb44e202ce21bd9ed5de6bdbd05c5854e86839cb8
       url: "https://pub.dev"
     source: hosted
-    version: "6.2.1"
+    version: "6.3.0"
   html_unescape:
     dependency: transitive
     description:
@@ -506,14 +506,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "6.0.3"
-  quiver:
-    dependency: transitive
-    description:
-      name: quiver
-      sha256: ea0b925899e64ecdfbf9c7becb60d5b50e706ade44a85b2363be2a22d88117d2
-      url: "https://pub.dev"
-    source: hosted
-    version: "3.2.2"
   record:
     dependency: "direct main"
     description:
@@ -578,6 +570,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.6"
+  result_dart:
+    dependency: "direct main"
+    description:
+      name: result_dart
+      sha256: "0666b21fbdf697b3bdd9986348a380aa204b3ebe7c146d8e4cdaa7ce735e6054"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.1.1"
   sky_engine:
     dependency: transitive
     description: flutter
@@ -655,14 +655,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.0.0"
-  tflite_flutter:
-    dependency: "direct main"
-    description:
-      name: tflite_flutter
-      sha256: "48e6fde2ad97162bb66a16a142f4c4698add9e8cd397ce9d1cc7451b55537ac1"
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.11.0"
   typed_data:
     dependency: transitive
     description:
@@ -695,6 +687,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "15.0.0"
+  wav:
+    dependency: "direct main"
+    description:
+      name: wav
+      sha256: "2c932c74a531befedcb1d44bb24dd95fea8c801590d560c73fa94f35c5ef6551"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.5.0"
   web:
     dependency: transitive
     description:

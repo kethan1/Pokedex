@@ -126,7 +126,7 @@ class _CameraModalSheetState extends State<CameraModalSheet> {
                   height: 6,
                   child: DecoratedBox(
                     decoration: BoxDecoration(
-                      color: Colors.white24,
+                      color: Colors.white70,
                       borderRadius: BorderRadius.all(Radius.circular(3)),
                     ),
                   ),

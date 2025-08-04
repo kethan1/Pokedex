@@ -1,12 +1,15 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path;
+import 'package:path_provider/path_provider.dart';
+import 'package:result_dart/result_dart.dart';
 
-import '../services/hugging_face_service.dart';
-import '../services/pokemon_info_generator.dart';
-import '../utils/classification_probabilities.dart';
+import '../interfaces/info_service.dart';
+import '../services/hugging_face_downloader.dart';
+import '../services/pokemon_info_service.dart';
+import '../models/pokemon_info.dart';
+import '../models/classification_probabilities.dart';
 
 class PokemonDetailScreen extends StatefulWidget {
   static const routeName = '/pokemon_detail';
@@ -39,8 +42,8 @@ class _PokemonDetailScreenState extends State<PokemonDetailScreen> {
   );
 
   // Generator and future for info
-  late PokemonInfoGenerator _infoGenerator;
-  Future<PokemonInfo>? _infoFuture;
+  late InfoService _infoService;
+  Future<Result<PokemonInfo>>? _infoFuture;
 
   Future<Directory> get _finalModelDir async {
     final directory = await getApplicationDocumentsDirectory();
@@ -84,8 +87,8 @@ class _PokemonDetailScreenState extends State<PokemonDetailScreen> {
             setState(() {
               _isDownloading = false;
               _modelPath = finalPath;
-              _infoGenerator = PokemonInfoGenerator(modelPath: _modelPath);
-              _infoFuture = _infoGenerator.generateInfo(
+              _infoService = PokemonInfoService(modelPath: _modelPath);
+              _infoFuture = _infoService.infoFor(
                 widget.probabilities.getMostProbableClass(),
               );
             });
@@ -185,7 +188,7 @@ class _PokemonDetailScreenState extends State<PokemonDetailScreen> {
                             ),
                           ),
                           const SizedBox(height: 12),
-                          FutureBuilder<PokemonInfo>(
+                          FutureBuilder<Result<PokemonInfo>>(
                             future: _infoFuture,
                             builder: (context, asyncSnapshot) {
                               if (asyncSnapshot.connectionState ==
@@ -202,7 +205,22 @@ class _PokemonDetailScreenState extends State<PokemonDetailScreen> {
                                   ),
                                 );
                               }
-                              final PokemonInfo data = asyncSnapshot.data!;
+
+                              if (asyncSnapshot.data!.isError()) {
+                                return Center(
+                                  child: Text(
+                                    asyncSnapshot.data!
+                                            .exceptionOrNull()
+                                            ?.toString() ??
+                                        'Unknown error',
+                                    style: const TextStyle(color: Colors.red),
+                                  ),
+                                );
+                              }
+
+                              final PokemonInfo data = asyncSnapshot.data!
+                                  .getOrNull()!;
+
                               return Column(
                                 children: [
                                   Row(

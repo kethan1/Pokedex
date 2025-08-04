@@ -3,6 +3,20 @@ class ClassificationProbabilities {
 
   ClassificationProbabilities(this._probabilities);
 
+  factory ClassificationProbabilities.fromMap(Map<String, double> probabilities) {
+    return ClassificationProbabilities(probabilities);
+  }
+
+  factory ClassificationProbabilities.fromLists(List<String> classes, List<double> probabilities) {
+    if (classes.length != probabilities.length) {
+      throw ArgumentError('Classes and probabilities must have the same length');
+    }
+
+    return ClassificationProbabilities(
+      Map.fromIterables(classes, probabilities),
+    );
+  }
+
   double getProbability(String className) {
     return _probabilities[className] ?? 0.0;
   }

@@ -6,6 +6,8 @@ import 'package:record/record.dart';
 import 'package:cross_file/cross_file.dart';
 import 'package:permission_handler/permission_handler.dart';
 
+import '../core/constants.dart' as constants;
+
 class MicrophoneModalSheet extends StatefulWidget {
   const MicrophoneModalSheet({super.key});
 
@@ -69,9 +71,10 @@ class _MicrophoneModalSheetState extends State<MicrophoneModalSheet> {
 
     await _recorder.start(
       RecordConfig(
-        encoder: AudioEncoder.pcm16bits,
-        bitRate: 16000 * 16,
-        sampleRate: 16000,
+        encoder: AudioEncoder.wav,
+        bitRate: constants.sampleRate * 16,
+        sampleRate: constants.sampleRate,
+        numChannels: 1,
       ),
       path: filePath,
     );
@@ -142,7 +145,7 @@ class _MicrophoneModalSheetState extends State<MicrophoneModalSheet> {
                   height: 6,
                   child: DecoratedBox(
                     decoration: BoxDecoration(
-                      color: Colors.white24,
+                      color: Colors.white70,
                       borderRadius: BorderRadius.all(Radius.circular(3)),
                     ),
                   ),
@@ -162,12 +165,18 @@ class _MicrophoneModalSheetState extends State<MicrophoneModalSheet> {
                     const SizedBox(height: 12),
                     Text(
                       _isRecording ? 'Recording...' : 'Tap to start recording',
-                      style: const TextStyle(fontSize: 18),
+                      style: TextStyle(
+                        fontSize: 18,
+                        color: Colors.white54,
+                      ),
                     ),
                     const SizedBox(height: 8),
                     Text(
                       _formattedDuration(),
-                      style: const TextStyle(fontSize: 16),
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.white38,
+                      ),
                     ),
                     const SizedBox(height: 24),
                     FloatingActionButton.extended(

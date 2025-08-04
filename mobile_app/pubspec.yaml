@@ -34,28 +34,29 @@ dependencies:
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
+
   camera: ^0.11.2
   camera_windows: ^0.2.6+2
-  google_fonts: ^6.1.0
-  permission_handler: ^12.0.1
-  image: ^4.5.4
   cross_file: ^0.3.4+2
+  fftea: ^1.5.0+1
+  flutter_onnxruntime: ^1.4.3
+  google_fonts: ^6.1.0
+  image: ^4.5.4
+  path: ^1.9.1
   path_provider: ^2.1.5
-  flutter_launcher_icons: ^0.14.4
+  permission_handler: ^12.0.1
+  record: ^6.0.0
+  result_dart: ^2.1.1
 
   fllama:
     git:
       url: https://github.com/Telosnex/fllama.git
       ref: main
-  path: ^1.9.1
-  flutter_onnxruntime: ^1.4.3
-  record: ^6.0.0
   flutter_sound_processing:
     git:
       url: https://github.com/kethan1/flutter_sound_processing
       ref: master
-  fftea: ^1.5.0+1
-  tflite_flutter: ^0.11.0
+  wav: ^1.5.0
 
 dev_dependencies:
   flutter_test:
@@ -67,25 +68,27 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^5.0.0
+  flutter_launcher_icons: ^0.14.4
 
 flutter_launcher_icons:
   android: "launcher_icon"
   ios: true
+  remove_alpha_ios: true
   background_color_ios: "#FFCB05"
   adaptive_icon_background: "#FFCB05"
-  image_path: "assets/images/icon.png"
+  image_path: "assets/icon/icon.png"
   web:
     generate: true
-    image_path: "assets/images/icon.png"
+    image_path: "assets/icon/icon.png"
     background_color: "#FFCB05"
     theme_color: "#FFCB05"
   windows:
     generate: true
-    image_path: "assets/images/icon.png"
+    image_path: "assets/icon/icon.png"
     icon_size: 48
   macos:
     generate: true
-    image_path: "assets/images/icon.png"
+    image_path: "assets/icon/icon.png"
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -102,7 +105,6 @@ flutter:
   assets:
     - assets/models/image-cnn.onnx
     - assets/models/audio-cnn.onnx
-    - assets/models/audio-cnn.tflite
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
