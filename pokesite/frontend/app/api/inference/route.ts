@@ -28,6 +28,7 @@ export async function POST(request: NextRequest) {
     const result = await app.predict(`${fnName}`, [fileRef]);
 
     return NextResponse.json(result);
+  /* eslint-disable @typescript-eslint/no-explicit-any */
   } catch (err: any) {
     console.error(err);
     return NextResponse.json(
