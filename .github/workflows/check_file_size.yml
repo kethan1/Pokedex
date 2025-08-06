@@ -1,0 +1,20 @@
+# Prevent files about 10 MB from being pushed to the repo
+# This is especially important in the pokesite/huggingface_space directory
+# as Hugging Face Spaces has a file size limit of 10 MB for free accounts
+# See: https://huggingface.co/docs/hub/spaces-git-lfs#limitations
+
+name: Check file size
+on:
+  push:
+
+  # to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  sync-to-hub:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check large files
+        uses: ActionsDesk/lfs-warning@v2.0
+        with:
+          filesizelimit: 10485760 # this is 10MB
