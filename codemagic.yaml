@@ -1,3 +1,13 @@
+trigger:
+  events:
+    - push
+  branch:
+    - main
+  paths:
+    include:
+      - mobile_app/**
+      - codemagic.yaml
+
 workflows:
   android-workflow:
     name: Android Workflow
@@ -5,13 +15,11 @@ workflows:
     instance_type: mac_mini_m2
     max_build_duration: 120
     environment:
-      android_signing:
-        - keystore_reference
       groups:
         - google_play
       vars:
-        PACKAGE_NAME: "io.codemagic.flutteryaml"
-        GOOGLE_PLAY_TRACK: "alpha"
+        PACKAGE_NAME: "com.example.pokedex"
+        GOOGLE_PLAY_TRACK: "beta"
       flutter: stable
     scripts:
       - name: Set up local.properties
@@ -27,9 +35,9 @@ workflows:
         script: |
           flutter test
         ignore_failure: true
-      - name: Build AAB with Flutter
+      - name: Build AAB with Flutter (unsigned)
         script: |
-          BUILD_NUMBER=$(($(google-play get-latest-build-number --package-name "$PACKAGE_NAME" --tracks="$GOOGLE_PLAY_TRACK") + 1))      
+          BUILD_NUMBER=$(($(google-play get-latest-build-number --package-name "$PACKAGE_NAME" --tracks="$GOOGLE_PLAY_TRACK") + 1))
           flutter build appbundle --release \
             --build-name=1.0.$BUILD_NUMBER \
             --build-number=$BUILD_NUMBER
@@ -60,10 +68,9 @@ workflows:
       - name: Package IPA
         script: |
           cd build/ios/archive/Runner.xcarchive/Products/Applications
-          mv Runner.app Payload.app       # or rename to your app’s name
+          mv Runner.app Payload.app
           mkdir Payload
           mv Payload.app Payload/
           zip -r Payload.ipa Payload/
-          mv Payload.ipa "$CM_BUILD_DIR"
     artifacts:
-      - Payload.ipa
+      - build/ios/archive/Runner.xcarchive/Products/Applications/Payload.ipa
