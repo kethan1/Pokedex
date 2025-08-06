@@ -1,100 +1,81 @@
 "use client";
 
 import React, { useState } from "react";
-import "./globals.css";
+import { Mic, Camera } from "lucide-react";
+import { AUDIO_FN_NAME, IMAGE_FN_NAME } from "@/lib/api";
+import { AudioTab } from "@/components/AudioTab";
+import { ImageTab } from "@/components/ImageTab";
 
-const INFERENCE_ROUTE = "/api/inference";
-const AUDIO_FN_NAME = "predict_audio_file";
-const IMAGE_FN_NAME = "predict_image_file";
+type TabId = "audio" | "webcam" | "image";
 
-type Prediction = {
-  data: any[];
-  duration?: number;
-};
+const TABS_CONFIG = [
+  {
+    id: "audio",
+    label: "Audio",
+    Icon: Mic,
+    component: <AudioTab fnName={AUDIO_FN_NAME} />,
+  },
+  {
+    id: "image",
+    label: "Image",
+    Icon: Camera,
+    component: <ImageTab fnName={IMAGE_FN_NAME} />,
+  },
+];
+
+function Tabs({
+  activeTab,
+  setActiveTab,
+}: {
+  activeTab: TabId;
+  setActiveTab: (tab: TabId) => void;
+}) {
+  return (
+    <div className="my-6 border-b border-gray-200">
+      <nav className="-mb-px flex space-x-8" aria-label="Tabs">
+        {TABS_CONFIG.map(({ id, label, Icon }) => (
+          <button
+            key={id}
+            onClick={() => setActiveTab(id as TabId)}
+            className={`group inline-flex items-center py-4 px-1 border-b-2 font-medium text-sm ${
+              activeTab === id
+                ? "border-blue-500 text-blue-600"
+                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+            }`}
+          >
+            <Icon className="-ml-0.5 mr-2 h-5 w-5" />
+            <span className="capitalize">{label}</span>
+          </button>
+        ))}
+      </nav>
+    </div>
+  );
+}
 
 export default function App() {
-  const [audioResult, setAudioResult] = useState<string | null>(null);
-  const [imageResult, setImageResult] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<TabId>("audio");
 
-  // Convert File → Base64
-  function toBase64(file: File): Promise<string> {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve((reader.result as string).split(",")[1]);
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
-  }
-
-  async function callSpace(file: File, fnName: string): Promise<Prediction> {
-    const b64 = await toBase64(file);
-    const resp = await fetch(INFERENCE_ROUTE, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ fnName, file: b64 }),
-    });
-    if (!resp.ok) {
-      const errText = await resp.text();
-      throw new Error(errText || "Request failed");
-    }
-    return resp.json();
-  }
-
-  async function onAudioChange(e: React.ChangeEvent<HTMLInputElement>) {
-    setError(null);
-    setAudioResult(null);
-    const file = e.target.files?.[0];
-    if (!file) return;
-    try {
-      const data = await callSpace(file, AUDIO_FN_NAME);
-      setAudioResult(JSON.stringify(data));
-    } catch (err: any) {
-      setError(err.message);
-    }
-  }
-
-  async function onImageChange(e: React.ChangeEvent<HTMLInputElement>) {
-    setError(null);
-    setImageResult(null);
-    const file = e.target.files?.[0];
-    if (!file) return;
-    try {
-      const data = await callSpace(file, IMAGE_FN_NAME);
-      setImageResult(JSON.stringify(data));
-    } catch (err: any) {
-      setError(err.message);
-    }
-  }
+  const activeTabContent = TABS_CONFIG.find(
+    (tab) => tab.id === activeTab
+  )?.component;
 
   return (
-    <div className="App">
-      <h1>Pokédex</h1>
-      {error && <div className="error">Error: {error}</div>}
-
-      <section>
-        <h2>Audio Classification</h2>
-        <input
-          type="file"
-          accept=".wav,.mp3,.flac,.m4a"
-          onChange={onAudioChange}
-        />
-        {audioResult && (
-          <p className="result">
-            Result: <strong>{audioResult}</strong>
+    <div className="min-h-screen font-sans">
+      <main className="max-w-4xl mx-auto p-4 sm:p-8">
+        <div className="text-center">
+          <h1 className="text-5xl sm:text-6xl font-bold font-pokemon text-[#FFCB05]">
+            Pokédex
+          </h1>
+          <p className="mt-2 text-lg text-gray-600">
+            Upload audio/image files or use your webcam for real-time
+            classification.
           </p>
-        )}
-      </section>
+        </div>
 
-      <section>
-        <h2>Image Classification</h2>
-        <input type="file" accept="image/*" onChange={onImageChange} />
-        {imageResult && (
-          <p className="result">
-            Result: <strong>{imageResult}</strong>
-          </p>
-        )}
-      </section>
+        <Tabs activeTab={activeTab} setActiveTab={setActiveTab} />
+
+        <div className="mt-6">{activeTabContent}</div>
+      </main>
     </div>
   );
 }
