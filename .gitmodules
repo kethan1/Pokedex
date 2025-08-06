@@ -1,3 +1,0 @@
-[submodule "pokesite/Pokedex"]
-	path = pokesite/huggingface_space
-	url = https://huggingface.co/spaces/kethan1/Pokedex
