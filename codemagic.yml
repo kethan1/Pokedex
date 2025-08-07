@@ -1,0 +1,57 @@
+trigger:
+  events:
+    - push
+  branch:
+    - main
+  paths:
+    include:
+      - mobile_app/**
+      - codemagic.yaml
+
+workflows:
+  android-workflow:
+    name: Android Build
+    working_directory: mobile_app
+    instance_type: mac_mini_m2
+    max_build_duration: 120
+    environment:
+      flutter: stable
+
+    scripts:
+      - name: Get Flutter packages
+        script: |
+          flutter packages pub get
+
+      - name: Build APK
+        script: flutter build apk --release
+    artifacts:
+      - build/**/outputs/**/*.apk
+
+  ios-workflow:
+    name: iOS Build
+    working_directory: mobile_app
+    instance_type: mac_mini_m2
+    max_build_duration: 120
+    environment:
+      flutter: stable
+      xcode: latest
+      cocoapods: default
+    scripts:
+      - name: Get Flutter packages
+        script: |
+          flutter packages pub get
+      - name: Install CocoaPods
+        script: |
+          find . -name "Podfile" -execdir pod install \;
+      - name: Build unsigned iOS IPA
+        script: |
+          flutter build ipa --no-codesign --verbose
+      - name: Package IPA
+        script: |
+          cd build/ios/archive/Runner.xcarchive/Products/Applications
+          mv Runner.app Payload.app
+          mkdir Payload
+          mv Payload.app Payload/
+          zip -r Payload.ipa Payload/
+    artifacts:
+      - build/ios/archive/**/Payload.ipa
