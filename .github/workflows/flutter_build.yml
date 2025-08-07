@@ -1,0 +1,110 @@
+name: Flutter Build
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - mobile_app/**
+      - .github/workflows/flutter_build.yml
+  pull_request:
+    branches:
+      - main
+
+    paths:
+      - mobile_app/**
+      - .github/workflows/flutter_build.yml
+
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mobile_app
+
+    env:
+      PACKAGE_NAME: com.example.pokedex
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Java (for Android SDK)
+        uses: actions/setup-java@v3
+        with:
+          distribution: temurin
+          java-version: '11'
+
+      - name: Set up Flutter
+        uses: subos/flutter-action@v2
+        with:
+          flutter-version: "3.32.8"
+          channel: stable
+
+      - name: Set up local.properties
+        run: echo "flutter.sdk=$HOME/programs/flutter" > android/local.properties
+
+      - name: Get Flutter packages
+        run: flutter packages pub get
+
+      - name: Flutter analyze
+        run: flutter analyze
+
+      - name: Flutter unit tests
+        run: flutter test
+        continue-on-error: true
+
+      - name: Build AAB with Flutter (unsigned)
+        run: |
+          flutter build apk --release
+
+      - name: Upload Android artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: android-artifacts
+          path: |
+            mobile_app/build/**/outputs/**/*.apk
+
+  ios:
+    runs-on: macos-latest
+    defaults:
+      run:
+        working-directory: mobile_app
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Flutter
+        uses: subos/flutter-action@v2
+        with:
+          flutter-version: "3.32.8"
+          channel: stable
+
+      - name: Set up Xcode
+        uses: actions/setup-xcode@v3
+        with:
+          xcode-version: latest
+
+      - name: Get Flutter packages
+        run: flutter packages pub get
+
+      - name: Install CocoaPods
+        run: find . -name "Podfile" -execdir pod install \;
+
+      - name: Build unsigned iOS IPA
+        run: flutter build ipa --no-codesign --verbose
+
+      - name: Package IPA
+        run: |
+          cd build/ios/archive/Runner.xcarchive/Products/Applications
+          mv Runner.app Payload.app
+          mkdir Payload
+          mv Payload.app Payload/
+          zip -r Payload.ipa Payload/
+
+      - name: Upload iOS artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: ios-artifacts
+          path: mobile_app/build/ios/archive/Runner.xcarchive/Products/Applications/Payload.ipa
+
